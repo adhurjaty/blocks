@@ -1,61 +1,43 @@
+using Blocks.Util;
+
 namespace Blocks;
 
-public enum Orientation
+public record BlockOrientation
+(
+    Block Block,
+    Orientation Orientation
+);
+
+public record ColorPosition
+(
+    Color Color,
+    Vec3<int> Position
+);
+
+public static class BlockOrientationExtensions
 {
-    X,
-    Y,
-    Z
-}
-
-public enum Direction
-{
-    ORIGIN,
-    FLIPPED
-}
-
-public class BlockOrientation
-{
-    private readonly Block _block;
-
-    public Orientation Orientation { get; private set; } = Orientation.X;
-    public Direction Direction { get; private set; } = Direction.ORIGIN;
-
-    private readonly Orientation[] _orientationOrder = new[]
+    public static (ColorPosition, ColorPosition) GetColorPositions(
+        this BlockOrientation blockOrientation, Vec3<int> pos)
     {
-        Orientation.X,
-        Orientation.Z,
-        Orientation.Y
-    };
-
-    public BlockOrientation(Block block)
-    {
-        _block = block;
-    }
-
-    public void CycleForward()
-    {
-        var newIdx = Array.IndexOf(_orientationOrder, Orientation) + 1;
-        if (newIdx >= _orientationOrder.Length)
-        {
-            newIdx = 0;
-            Flip();
-        }
-        Orientation = _orientationOrder[newIdx];
-    }
-
-    public void CycleBackward()
-    {
-        var newIdx = Array.IndexOf(_orientationOrder, Orientation) - 1;
-        if (newIdx < 0)
-        {
-            newIdx = _orientationOrder.Length - 1;
-            Flip();
-        }
-        Orientation = _orientationOrder[newIdx];
-    }
-
-    public void Flip()
-    {
-        Direction = Direction == Direction.ORIGIN ? Direction.FLIPPED : Direction.ORIGIN;
+        var block = blockOrientation.Block;
+        var orientation = blockOrientation.Orientation;
+        return (
+            new ColorPosition
+            (
+                Color: block.First,
+                Position: pos
+            ),
+            new ColorPosition
+            (
+                Color: block.Second,
+                Position: orientation switch
+                {
+                    Orientation.X => pos with { X = pos.X + 1 },
+                    Orientation.Y => pos with { Y = pos.Y + 1 },
+                    Orientation.Z => pos with { Z = pos.Z + 1 },
+                    _ => throw new ArgumentException("Invalid orientation")
+                }
+            )
+        );
     }
 }

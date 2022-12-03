@@ -52,5 +52,28 @@ public class Game
             throw new Exception("Unbalanced black vs. white");
     }
 
-    
+    // public bool PlaceBlock(BlockOrientation block)
+    // {
+
+    // }
+
+    // public bool CanPlaceBlock(BlockOrientation block)
+    // {
+    //     return block.Orientation switch
+    //     {
+    //         Orientation.Y => true,
+    //         _ => false
+    //     };
+    // }
+
+    // public Score GetScore()
+    // {
+
+    // }
 }
+
+public record Score
+(
+    int Black = 0,
+    int White = 0
+);

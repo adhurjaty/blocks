@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Blocks.Util;
 using FluentAssertions;
@@ -64,6 +65,20 @@ public class GameStateTests
 
         block.Should().BeEquivalentTo(new Block(Color.RED, Color.WHITE));
         state.RemainingBlocks.Where(x => x == block).Count().Should().Be(6);
+    }
+
+    [Fact]
+    public void TakeBlock_Failure()
+    {
+        var state = new FourByFourByFourGameState();
+
+        for (int i = 0; i < 3; i++)
+        {
+            state.TakeBlock(new Block(Color.WHITE, Color.WHITE));
+        }
+
+        Action failAction = () => state.TakeBlock(new Block(Color.WHITE, Color.WHITE));
+        failAction.Should().Throw<Exception>().WithMessage("Block (WHITE, WHITE) does not exist in remaining blocks");
     }
 
     [Fact]

@@ -49,7 +49,8 @@ public class FourByFourByFourGameState : IGameState
 
     public Block TakeBlock(Block block)
     {
-        RemainingBlocks.Remove(block);
+        if (!RemainingBlocks.Remove(block))
+            throw new Exception($"Block ({block.First}, {block.Second}) does not exist in remaining blocks");
         return block;
     }
 

@@ -4,62 +4,18 @@ namespace Blocks;
 
 public class Game
 {
-    private readonly List<(Block, int)> _startingBlocks = new()
-    {
-        (new Block(First: Color.WHITE, Second: Color.WHITE), 3),
-        (new Block(First: Color.BLACK, Second: Color.BLACK), 3),
-        (new Block(First: Color.WHITE, Second: Color.BLACK), 12),
-        (new Block(First: Color.RED, Second: Color.BLACK), 7),
-        (new Block(First: Color.RED, Second: Color.WHITE), 7),
-    };
-    private readonly GameState _state;
+    private readonly IGameState _state;
     private readonly PlacementRules _rules;
 
-    public Game()
+    public Game(IGameState state)
     {
-        AssertValidStartingBlocks();
-
-        var board = new Space[4, 4, 4];
-        _state = new GameState()
-        {
-            Board = board,
-            RemainingBlocks = _startingBlocks
-                .SelectMany(blockInfo =>
-                {
-                    var (block, num) = blockInfo;
-                    return Enumerable.Range(0, num).Select(_ => block);
-                }).ToList()
-        };
-        _rules = new PlacementRules(board);
-    }
-
-    private void AssertValidStartingBlocks()
-    {
-        var numberOfBlocks = _startingBlocks.Sum(x => x.Item2);
-        if(numberOfBlocks != 32)
-            throw new Exception($"Incorrect number of blocks: {numberOfBlocks}");
-
-        var colorDict = _startingBlocks.Aggregate(new Dictionary<Color, int>()
-        {
-            { Color.BLACK, 0 },
-            { Color.WHITE, 0 },
-            { Color.RED, 0 }
-        },
-        (dict, blockInfo) =>
-        {
-            var (block, num) = blockInfo;
-            dict[block.First] += num;
-            dict[block.Second] += num;
-            return dict;
-        });
-        if(colorDict[Color.BLACK] != colorDict[Color.WHITE])
-            throw new Exception("Unbalanced black vs. white");
+        _state = state;
+        _rules = new PlacementRules(state.Board);
     }
 
     public BlockManipulator TakeBlock(Block block)
     {
-        _state.RemainingBlocks.Remove(block);
-        return new BlockManipulator(block);
+        return new BlockManipulator(_state.TakeBlock(block));
     }
 
     public bool PlaceBlock(BlockOrientation block, Vec3<int> pos)
@@ -67,11 +23,7 @@ public class Game
         if (!CanPlaceBlock(block, pos)) return false;
 
         var (first, second) = block.GetColorPositions(pos);
-        foreach(var cube in new[] { first, second })
-        {
-            var cubePos = cube.Position;
-            _state.Board[cubePos.X, cubePos.Y, cubePos.Z] = cube.Color.ToSpace();
-        }
+        _state.UpdateBoard(new[] { first, second });
         return true;
     }
 

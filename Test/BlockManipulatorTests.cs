@@ -1,8 +1,7 @@
-using Blocks;
 using FluentAssertions;
 using Xunit;
 
-namespace Test;
+namespace Blocks.Test;
 
 public class BlockManipulatorTests
 {
